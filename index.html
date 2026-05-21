@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Control de Inventario</title>
+
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
@@ -23,7 +25,11 @@
             --radius: 12px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: 'DM Sans', sans-serif;
@@ -40,56 +46,36 @@
             max-width: 520px;
         }
 
-        /* HEADER */
         .header {
             display: flex;
             align-items: center;
             gap: 12px;
             padding: 20px 0 24px;
         }
+
         .header-icon {
-            width: 44px; height: 44px;
+            width: 44px;
+            height: 44px;
             background: linear-gradient(135deg, var(--accent), var(--accent2));
             border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 20px;
             flex-shrink: 0;
         }
-        .header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
-        .header p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
-        /* OFFLINE BANNER */
-        #offlineBanner {
-            display: none;
-            background: #3d2000;
-            border: 1px solid var(--warning);
-            color: var(--warning);
-            padding: 10px 14px;
-            border-radius: var(--radius);
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 14px;
-            text-align: center;
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
         }
-        #offlineBanner.show { display: block; }
 
-        /* COLA OFFLINE */
-        #colaBanner {
-            display: none;
-            background: #1a2a1a;
-            border: 1px solid var(--success);
-            color: var(--success);
-            padding: 10px 14px;
-            border-radius: var(--radius);
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 14px;
-            cursor: pointer;
-            text-align: center;
+        .header p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
-        #colaBanner.show { display: block; }
 
-        /* CARD */
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -97,6 +83,7 @@
             padding: 18px;
             margin-bottom: 14px;
         }
+
         .card-title {
             font-size: 11px;
             font-weight: 600;
@@ -106,9 +93,14 @@
             margin-bottom: 14px;
         }
 
-        /* SCANNER */
-        #readerWrapper { display: none; }
-        #readerWrapper.active { display: block; }
+        #readerWrapper {
+            display: none;
+        }
+
+        #readerWrapper.active {
+            display: block;
+        }
+
         #reader {
             width: 100%;
             background: #000;
@@ -117,6 +109,7 @@
             border: 2px solid var(--border);
             margin-bottom: 12px;
         }
+
         #reader button {
             background-color: #374151 !important;
             color: white !important;
@@ -127,7 +120,6 @@
             font-family: 'DM Sans', sans-serif !important;
         }
 
-        /* PROGRESS BAR */
         #scanProgress {
             display: none;
             height: 4px;
@@ -136,7 +128,11 @@
             overflow: hidden;
             margin-bottom: 10px;
         }
-        #scanProgress.active { display: block; }
+
+        #scanProgress.active {
+            display: block;
+        }
+
         #scanProgressBar {
             height: 100%;
             width: 0%;
@@ -145,9 +141,10 @@
             transition: width 1.5s linear;
         }
 
-        /* BUTTONS */
         .btn {
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 8px;
             width: 100%;
             padding: 13px;
@@ -157,15 +154,14 @@
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.15s, transform 0.1s;
         }
-        .btn:active { transform: scale(0.98); }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
         .btn-scan {
             background: linear-gradient(135deg, var(--accent), var(--accent2));
             color: white;
             margin-bottom: 14px;
         }
+
         .btn-search {
             background: var(--surface2);
             color: var(--text);
@@ -175,6 +171,7 @@
             border-radius: 8px;
             font-size: 14px;
         }
+
         .btn-submit {
             background: linear-gradient(135deg, #16a34a, #15803d);
             color: white;
@@ -182,6 +179,7 @@
             padding: 16px;
             font-size: 16px;
         }
+
         .btn-reset {
             background: var(--surface2);
             color: var(--text-muted);
@@ -190,14 +188,15 @@
             font-size: 14px;
         }
 
-        /* SEARCH */
         .search-group {
             display: flex;
             gap: 8px;
         }
-        .search-group input { flex: 1; }
 
-        /* INPUTS */
+        .search-group input {
+            flex: 1;
+        }
+
         label {
             display: block;
             font-size: 12px;
@@ -208,6 +207,7 @@
             margin-bottom: 6px;
             margin-top: 16px;
         }
+
         input[type="text"],
         input[type="number"],
         textarea,
@@ -220,88 +220,95 @@
             color: var(--text);
             font-family: 'DM Sans', sans-serif;
             font-size: 15px;
-            transition: border-color 0.2s;
-            -webkit-appearance: none;
         }
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(79,142,247,0.12);
-        }
-        input:disabled, textarea:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        select option { background: var(--surface2); }
-        textarea { resize: none; }
 
-        /* STATUS BADGE */
-        #statusBadge { margin: 14px 0 4px; min-height: 10px; }
+        textarea {
+            resize: none;
+        }
+
+        #statusBadge {
+            margin: 14px 0 4px;
+        }
+
         .badge {
-            display: flex; align-items: center; gap: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             padding: 10px 14px;
             border-radius: 8px;
             font-size: 13px;
             font-weight: 600;
         }
-        .badge-dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .badge-info { background: rgba(79,142,247,0.12); color: var(--accent); border: 1px solid rgba(79,142,247,0.25); }
-        .badge-info .badge-dot { background: var(--accent); }
-        .badge-new { background: rgba(245,158,11,0.12); color: var(--warning); border: 1px solid rgba(245,158,11,0.25); }
-        .badge-new .badge-dot { background: var(--warning); }
-        .badge-exists { background: rgba(34,197,94,0.12); color: var(--success); border: 1px solid rgba(34,197,94,0.25); }
-        .badge-exists .badge-dot { background: var(--success); }
 
-        /* CANTIDAD SISTEMA */
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .badge-info {
+            background: rgba(79,142,247,0.12);
+            color: var(--accent);
+        }
+
+        .badge-new {
+            background: rgba(245,158,11,0.12);
+            color: var(--warning);
+        }
+
+        .badge-exists {
+            background: rgba(34,197,94,0.12);
+            color: var(--success);
+        }
+
+        .badge-info .badge-dot {
+            background: var(--accent);
+        }
+
+        .badge-new .badge-dot {
+            background: var(--warning);
+        }
+
+        .badge-exists .badge-dot {
+            background: var(--success);
+        }
+
         .cantidad-sistema {
-            font-family: 'DM Mono', monospace;
             font-size: 12px;
             color: var(--text-muted);
             margin-top: 4px;
         }
-        .cantidad-sistema b { color: var(--text); }
 
-        /* SELECTOR COINCIDENCIAS */
         .selector-coincidencias {
             display: none;
-            background: rgba(79,142,247,0.07);
-            border: 1px solid rgba(79,142,247,0.25);
-            border-radius: 8px;
-            padding: 12px;
             margin-top: 12px;
         }
-        .selector-coincidencias.show { display: block; }
-        .selector-coincidencias p {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 8px;
+
+        .selector-coincidencias.show {
+            display: block;
         }
 
-        /* RADIO ESTADO */
         .radio-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
             margin-top: 6px;
         }
+
         .radio-tile {
             position: relative;
             cursor: pointer;
         }
+
         .radio-tile input[type="radio"] {
             position: absolute;
             opacity: 0;
-            width: 0; height: 0;
         }
+
         .radio-tile-inner {
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 8px;
             background: var(--surface2);
             border: 2px solid var(--border);
@@ -309,16 +316,14 @@
             border-radius: 8px;
             font-size: 14px;
             font-weight: 600;
-            transition: all 0.15s;
             color: var(--text-muted);
         }
+
         .radio-tile input:checked + .radio-tile-inner {
             border-color: var(--accent);
             color: var(--accent);
-            background: rgba(79,142,247,0.1);
         }
 
-        /* DIVIDER */
         .divider {
             border: none;
             border-top: 1px solid var(--border);
@@ -326,7 +331,9 @@
         }
     </style>
 </head>
+
 <body>
+
 <div class="container">
 
     <div class="header">
@@ -337,31 +344,34 @@
         </div>
     </div>
 
-    <div id="offlineBanner">⚡ Sin conexión — los registros se guardarán localmente</div>
-    <div id="colaBanner" onclick="sincronizarCola()">🔄 Tienes <span id="colaCount">0</span> registro(s) pendientes. Toca para sincronizar.</div>
-
     <!-- SCANNER -->
     <div class="card">
         <div class="card-title">📷 Escáner QR / Código de barras</div>
+
         <button class="btn btn-scan" id="btnScan" onclick="toggleScanner()">
-            <span>📷</span> <span id="btnScanText">Abrir Cámara</span>
+            📷 <span id="btnScanText">Abrir Cámara</span>
         </button>
+
         <div id="readerWrapper">
             <div id="reader"></div>
-            <div id="scanProgress"><div id="scanProgressBar"></div></div>
+
+            <div id="scanProgress">
+                <div id="scanProgressBar"></div>
+            </div>
         </div>
     </div>
 
-    <!-- BÚSQUEDA MANUAL -->
+    <!-- BÚSQUEDA -->
     <div class="card">
+
         <div class="card-title">🔍 Búsqueda manual</div>
+
         <div class="search-group">
             <input type="text" id="codigo" placeholder="Código o nombre del producto...">
             <button class="btn btn-search" onclick="buscarManual()">Buscar</button>
         </div>
 
         <div id="wrapperCoincidencias" class="selector-coincidencias">
-            <p>Múltiples coincidencias — elige una:</p>
             <select id="selectCoincidencias" onchange="seleccionarProducto()">
                 <option value="">-- Selecciona el producto --</option>
             </select>
@@ -370,327 +380,285 @@
         <div id="statusBadge"></div>
     </div>
 
-    <!-- FORMULARIO -->
+    <!-- FORM -->
     <div class="card" id="formCard" style="display:none;">
+
         <div class="card-title">📝 Datos del producto</div>
 
         <label>Nombre del Producto</label>
-        <input type="text" id="producto" disabled placeholder="Se carga automáticamente">
+        <input type="text" id="producto" disabled>
 
-        <label>Ubicación en Almacén</label>
-        <input type="text" id="ubicacion" disabled placeholder="Se carga automáticamente">
+        <label>Ubicación</label>
+        <input type="text" id="ubicacion" disabled>
 
         <hr class="divider">
 
-        <label>Estado de Revisión</label>
+        <label>Estado</label>
+
         <div class="radio-container">
+
             <label class="radio-tile">
                 <input type="radio" name="estado" value="En existencia" checked>
                 <div class="radio-tile-inner">✅ En existencia</div>
             </label>
+
             <label class="radio-tile">
                 <input type="radio" name="estado" value="Sin existencia">
                 <div class="radio-tile-inner">❌ Sin existencia</div>
             </label>
+
         </div>
 
-        <label>Cantidad de Piezas</label>
-        <input type="number" id="cantidad" placeholder="0" min="0" inputmode="numeric">
+        <label>Cantidad</label>
+        <input type="number" id="cantidad" min="0">
 
-        <label>Comentario / Observación</label>
-        <textarea id="comentario" rows="2" placeholder="Novedades del ítem..."></textarea>
+        <label>Comentario</label>
+        <textarea id="comentario" rows="2"></textarea>
 
         <button class="btn btn-submit" id="submitBtn" onclick="guardar()">
-            <span>💾</span> <span id="submitText">Guardar en Google Sheets</span>
+            💾 <span id="submitText">Guardar en Google Sheets</span>
         </button>
-        <button class="btn btn-reset" onclick="resetForm()">↩ Nuevo registro</button>
+
+        <button class="btn btn-reset" onclick="resetForm()">
+            ↩ Nuevo registro
+        </button>
+
     </div>
 
 </div>
 
 <script>
-    // ── CONFIGURACIÓN ────────────────────────────────────────────────
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbza4g37vWUNkjp5uLWzFc-ynTNHtiSOSDBVPGnxDXc2WPoL8NF9hg7nXSov5z-2LTJy6g/exec";
-    const COLA_KEY = "inventario_cola";
 
-    // ── ESTADO ───────────────────────────────────────────────────────
-    let filaActualizar = null;
-    let listaResultados = [];
-    let scanTimer = null;
-    let ultimoCodigo = "";
-    let scannerActivo = false;
-    let html5QrcodeScanner = null;
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby5dzjEuv7qdioKoESxYS9rL29Z70ByIMfaHUqNfnfsXth4eaRbfABUrAYNHUvQ9MVXVg/exec";
 
-    // ── OFFLINE ──────────────────────────────────────────────────────
-    function estaOnline() { return navigator.onLine; }
+let filaActualizar = null;
+let listaResultados = [];
+let scanTimer = null;
+let ultimoCodigo = "";
+let scannerActivo = false;
+let html5QrcodeScanner = null;
 
-    function actualizarBannerOffline() {
-        document.getElementById('offlineBanner').classList.toggle('show', !estaOnline());
-        actualizarBannerCola();
+function toggleScanner() {
+    if (scannerActivo) cerrarScanner();
+    else abrirScanner();
+}
+
+function abrirScanner() {
+
+    document.getElementById('readerWrapper').classList.add('active');
+    document.getElementById('btnScanText').textContent = "Cerrar Cámara";
+
+    scannerActivo = true;
+
+    html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+        fps: 10,
+        qrbox: { width: 250, height: 120 },
+        rememberLastUsedCamera: true
+    });
+
+    html5QrcodeScanner.render(onScanSuccess);
+}
+
+function cerrarScanner() {
+
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear().catch(() => {});
+        html5QrcodeScanner = null;
     }
 
-    function obtenerCola() {
-        try { return JSON.parse(localStorage.getItem(COLA_KEY) || "[]"); } 
-        catch { return []; }
-    }
+    document.getElementById('readerWrapper').classList.remove('active');
+    document.getElementById('btnScanText').textContent = "Abrir Cámara";
 
-    function guardarCola(cola) {
-        localStorage.setItem(COLA_KEY, JSON.stringify(cola));
-    }
+    scannerActivo = false;
+}
 
-    function actualizarBannerCola() {
-        const cola = obtenerCola();
-        const banner = document.getElementById('colaBanner');
-        if (cola.length > 0 && estaOnline()) {
-            document.getElementById('colaCount').textContent = cola.length;
-            banner.classList.add('show');
-        } else {
-            banner.classList.remove('show');
-        }
-    }
+function onScanSuccess(decodedText) {
 
-    async function sincronizarCola() {
-        const cola = obtenerCola();
-        if (cola.length === 0) return;
-        
-        const banner = document.getElementById('colaBanner');
-        banner.textContent = "⏳ Sincronizando...";
+    if (decodedText === ultimoCodigo) return;
 
-        let exitos = 0;
-        const fallidos = [];
+    ultimoCodigo = decodedText;
 
-        for (const payload of cola) {
-            try {
-                const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const data = await res.json();
-                if (data.resultado === "Éxito") exitos++;
-                else fallidos.push(payload);
-            } catch {
-                fallidos.push(payload);
-            }
-        }
+    document.getElementById('codigo').value = decodedText;
 
-        guardarCola(fallidos);
-        actualizarBannerCola();
-        if (exitos > 0) alert(`✅ ${exitos} registro(s) sincronizados correctamente.`);
-    }
+    cerrarScanner();
 
-    window.addEventListener('online', actualizarBannerOffline);
-    window.addEventListener('offline', actualizarBannerOffline);
-    actualizarBannerOffline();
+    buscarCodigo(decodedText);
+}
 
-    // ── SCANNER ──────────────────────────────────────────────────────
-    function toggleScanner() {
-        if (scannerActivo) {
-            cerrarScanner();
-        } else {
-            abrirScanner();
-        }
-    }
+function buscarManual() {
 
-    function abrirScanner() {
-        document.getElementById('readerWrapper').classList.add('active');
-        document.getElementById('btnScanText').textContent = "Cerrar Cámara";
-        scannerActivo = true;
-        ultimoCodigo = "";
+    const cod = document.getElementById('codigo').value.trim();
 
-        html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-            fps: 10,
-            qrbox: function(w, h) {
-                var size = Math.floor(Math.min(w, h) * 0.72);
-                return { width: size, height: Math.floor(size * 0.6) };
-            },
-            rememberLastUsedCamera: true
-        });
-        html5QrcodeScanner.render(onScanSuccess);
-    }
+    if (cod) buscarCodigo(cod);
+}
 
-    function cerrarScanner() {
-        if (html5QrcodeScanner) {
-            html5QrcodeScanner.clear().catch(() => {});
-            html5QrcodeScanner = null;
-        }
-        document.getElementById('readerWrapper').classList.remove('active');
-        document.getElementById('btnScanText').textContent = "Abrir Cámara";
-        document.getElementById('scanProgress').classList.remove('active');
-        if (scanTimer) { clearTimeout(scanTimer); scanTimer = null; }
-        scannerActivo = false;
-    }
+function buscarCodigo(texto) {
 
-    function onScanSuccess(decodedText) {
-        if (decodedText === ultimoCodigo) return;
+    const badge = document.getElementById('statusBadge');
 
-        if (scanTimer) { clearTimeout(scanTimer); scanTimer = null; }
+    badge.innerHTML =
+        '<div class="badge badge-info"><span class="badge-dot"></span>Buscando...</div>';
 
-        ultimoCodigo = decodedText;
-
-        // Mostrar barra de progreso
-        const progress = document.getElementById('scanProgress');
-        const bar = document.getElementById('scanProgressBar');
-        progress.classList.add('active');
-        bar.style.width = "0%";
-        setTimeout(() => { bar.style.width = "100%"; }, 50);
-
-        document.getElementById('statusBadge').innerHTML =
-            '<div class="badge badge-info"><span class="badge-dot"></span>Código detectado, mantén quieto...</div>';
-
-        scanTimer = setTimeout(function() {
-            document.getElementById('codigo').value = decodedText;
-            cerrarScanner();
-            ultimoCodigo = "";
-            scanTimer = null;
-            buscarCodigo(decodedText);
-        }, 1500);
-    }
-
-    // ── BÚSQUEDA ─────────────────────────────────────────────────────
-    function buscarManual() {
-        const cod = document.getElementById('codigo').value.trim();
-        if (cod) buscarCodigo(cod);
-    }
-
-    function buscarCodigo(texto) {
-        const badge = document.getElementById('statusBadge');
-        const wrapper = document.getElementById('wrapperCoincidencias');
-        wrapper.classList.remove('show');
-        badge.innerHTML = '<div class="badge badge-info"><span class="badge-dot"></span>Buscando...</div>';
-
-        fetch(WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify({ accion: "buscar", codigo: texto })
+    fetch(WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+            accion: "buscar",
+            codigo: texto
         })
-        .then(r => r.json())
-        .then(data => {
-            if (!data.encontrado) {
-                badge.innerHTML = '<div class="badge badge-new"><span class="badge-dot"></span>Sin coincidencias — se creará un registro nuevo</div>';
-                document.getElementById('producto').value = isNaN(texto) ? texto : "";
-                document.getElementById('producto').disabled = false;
-                document.getElementById('ubicacion').value = "";
-                document.getElementById('ubicacion').disabled = false;
-                filaActualizar = null;
-                listaResultados = [];
-                document.getElementById('formCard').style.display = "block";
-                return;
-            }
+    })
 
-            listaResultados = data.lista;
+    .then(r => r.json())
 
-            if (data.multiples) {
-                badge.innerHTML = `<div class="badge badge-info"><span class="badge-dot"></span>${data.lista.length} coincidencias encontradas</div>`;
-                let opts = '<option value="">-- Elige el producto correcto --</option>';
-                data.lista.forEach((item, i) => {
-                    opts += `<option value="${i}">${item.producto} · ${item.codigo}</option>`;
-                });
-                document.getElementById('selectCoincidencias').innerHTML = opts;
-                wrapper.classList.add('show');
-                document.getElementById('formCard').style.display = "none";
-            } else {
-                cargarProducto(data.lista[0]);
-            }
-        })
-        .catch(() => {
-            badge.innerHTML = '<div class="badge badge-new"><span class="badge-dot"></span>Sin conexión — modo offline</div>';
+    .then(data => {
+
+        if (!data.encontrado) {
+
+            badge.innerHTML =
+                '<div class="badge badge-new"><span class="badge-dot"></span>Producto nuevo</div>';
+
+            document.getElementById('producto').value = "";
+            document.getElementById('ubicacion').value = "";
+
             document.getElementById('producto').disabled = false;
             document.getElementById('ubicacion').disabled = false;
+
             filaActualizar = null;
+
             document.getElementById('formCard').style.display = "block";
-        });
-    }
 
-    function seleccionarProducto() {
-        const idx = document.getElementById('selectCoincidencias').value;
-        if (idx !== "") cargarProducto(listaResultados[idx]);
-    }
-
-    function cargarProducto(item) {
-        const badge = document.getElementById('statusBadge');
-        badge.innerHTML = `
-            <div class="badge badge-exists"><span class="badge-dot"></span>Producto encontrado</div>
-            <div class="cantidad-sistema" style="margin-top:6px; padding-left:4px;">
-                Cantidad en sistema: <b>${item.cantidadSistema || 0}</b> piezas
-            </div>`;
-
-        document.getElementById('codigo').value = item.codigo;
-        document.getElementById('producto').value = item.producto;
-        document.getElementById('ubicacion').value = item.ubicacion;
-        document.getElementById('producto').disabled = true;
-        document.getElementById('ubicacion').disabled = true;
-        filaActualizar = item.fila;
-        document.getElementById('wrapperCoincidencias').classList.remove('show');
-        document.getElementById('formCard').style.display = "block";
-        document.getElementById('cantidad').focus();
-    }
-
-    // ── GUARDAR ──────────────────────────────────────────────────────
-    async function guardar() {
-        const btn = document.getElementById('submitBtn');
-        const txt = document.getElementById('submitText');
-        btn.disabled = true;
-        txt.textContent = "Guardando...";
-
-        const payload = {
-            accion: "registrar",
-            filaActualizar: filaActualizar,
-            codigo: document.getElementById('codigo').value,
-            producto: document.getElementById('producto').value,
-            ubicacion: document.getElementById('ubicacion').value,
-            estado: document.querySelector('input[name="estado"]:checked').value,
-            cantidad: document.getElementById('cantidad').value,
-            comentario: document.getElementById('comentario').value
-        };
-
-        if (!estaOnline()) {
-            // Guardar en cola offline
-            const cola = obtenerCola();
-            cola.push(payload);
-            guardarCola(cola);
-            actualizarBannerCola();
-            alert("📥 Guardado localmente. Se sincronizará cuando haya conexión.");
-            resetForm();
-            btn.disabled = false;
-            txt.textContent = "Guardar en Google Sheets";
             return;
         }
 
-        try {
-            const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const data = await res.json();
-            if (data.resultado === "Éxito") {
-                alert("✅ Inventario actualizado correctamente.");
-                resetForm();
-            } else {
-                alert("⚠️ Error: " + (data.error || "Respuesta inesperada"));
-            }
-        } catch {
-            // Si falla, guardar en cola
-            const cola = obtenerCola();
-            cola.push(payload);
-            guardarCola(cola);
-            actualizarBannerCola();
-            alert("📥 Error de red. Guardado localmente para sincronizar después.");
+        listaResultados = data.lista;
+
+        if (data.multiples) {
+
+            let opts = '<option value="">Selecciona...</option>';
+
+            data.lista.forEach((item, i) => {
+                opts += `<option value="${i}">${item.producto}</option>`;
+            });
+
+            document.getElementById('selectCoincidencias').innerHTML = opts;
+
+            document.getElementById('wrapperCoincidencias').classList.add('show');
+
+        } else {
+
+            cargarProducto(data.lista[0]);
+        }
+    })
+
+    .catch(() => {
+
+        badge.innerHTML =
+            '<div class="badge badge-new"><span class="badge-dot"></span>Error de conexión</div>';
+    });
+}
+
+function seleccionarProducto() {
+
+    const idx = document.getElementById('selectCoincidencias').value;
+
+    if (idx !== "") cargarProducto(listaResultados[idx]);
+}
+
+function cargarProducto(item) {
+
+    document.getElementById('statusBadge').innerHTML = `
+        <div class="badge badge-exists">
+            <span class="badge-dot"></span>
+            Producto encontrado
+        </div>
+    `;
+
+    document.getElementById('codigo').value = item.codigo;
+    document.getElementById('producto').value = item.producto;
+    document.getElementById('ubicacion').value = item.ubicacion;
+
+    document.getElementById('producto').disabled = true;
+    document.getElementById('ubicacion').disabled = true;
+
+    filaActualizar = item.fila;
+
+    document.getElementById('formCard').style.display = "block";
+}
+
+async function guardar() {
+
+    const btn = document.getElementById('submitBtn');
+    const txt = document.getElementById('submitText');
+
+    btn.disabled = true;
+    txt.textContent = "Guardando...";
+
+    const payload = {
+
+        accion: "registrar",
+
+        filaActualizar: filaActualizar,
+
+        codigo: document.getElementById('codigo').value,
+
+        producto: document.getElementById('producto').value,
+
+        ubicacion: document.getElementById('ubicacion').value,
+
+        estado: document.querySelector('input[name="estado"]:checked').value,
+
+        cantidad: document.getElementById('cantidad').value,
+
+        comentario: document.getElementById('comentario').value
+    };
+
+    try {
+
+        const res = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.resultado === "Éxito") {
+
+            alert("✅ Inventario actualizado correctamente.");
+
             resetForm();
+
+        } else {
+
+            alert("⚠️ Error");
         }
 
-        btn.disabled = false;
-        txt.textContent = "Guardar en Google Sheets";
+    } catch (error) {
+
+        alert("❌ No se pudo conectar con Google Sheets.");
     }
 
-    // ── RESET ────────────────────────────────────────────────────────
-    function resetForm() {
-        document.getElementById('codigo').value = "";
-        document.getElementById('producto').value = "";
-        document.getElementById('ubicacion').value = "";
-        document.getElementById('cantidad').value = "";
-        document.getElementById('comentario').value = "";
-        document.getElementById('statusBadge').innerHTML = "";
-        document.getElementById('wrapperCoincidencias').classList.remove('show');
-        document.getElementById('formCard').style.display = "none";
-        document.querySelector('input[name="estado"][value="En existencia"]').checked = true;
-        document.getElementById('producto').disabled = true;
-        document.getElementById('ubicacion').disabled = true;
-        filaActualizar = null;
-        listaResultados = [];
-    }
+    btn.disabled = false;
+
+    txt.textContent = "Guardar en Google Sheets";
+}
+
+function resetForm() {
+
+    document.getElementById('codigo').value = "";
+    document.getElementById('producto').value = "";
+    document.getElementById('ubicacion').value = "";
+    document.getElementById('cantidad').value = "";
+    document.getElementById('comentario').value = "";
+
+    document.getElementById('statusBadge').innerHTML = "";
+
+    document.getElementById('wrapperCoincidencias').classList.remove('show');
+
+    document.getElementById('formCard').style.display = "none";
+
+    filaActualizar = null;
+}
+
 </script>
+
 </body>
 </html>
