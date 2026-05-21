@@ -2,210 +2,108 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- Línea vital para que el celular no auto-asigne un zoom diminuto y se adapte a su pantalla -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Control de Inventario</title>
-
+    <title>Control de Inventario Móvil</title>
+    <!-- Librería oficial para escaneo de QR y Barras -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-
+    
     <style>
         :root {
-            --bg: #0f1117;
-            --surface: #1a1d27;
-            --surface2: #22263a;
-            --border: #2e3350;
-            --accent: #4f8ef7;
-            --accent2: #7c3aed;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text: #e8eaf6;
-            --text-muted: #8b90a7;
-            --radius: 12px;
+            --primary: #007bff;
+            --primary-hover: #0056b3;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --bg-body: #f8f9fa;
+            --text-dark: #212529;
+            --border-color: #ced4da;
         }
 
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 16px;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 12px;
             display: flex;
             justify-content: center;
         }
 
         .container {
             width: 100%;
-            max-width: 520px;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 20px 0 24px;
-        }
-
-        .header-icon {
-            width: 44px;
-            height: 44px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            max-width: 540px; /* Tamaño ideal para operar a una mano */
+            background: #ffffff;
+            padding: 20px 16px;
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
-        .header h1 {
-            font-size: 20px;
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 18px;
+            font-size: 22px;
+            color: #111;
             font-weight: 700;
         }
 
-        .header p {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 18px;
-            margin-bottom: 14px;
-        }
-
-        .card-title {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 14px;
-        }
-
-        #readerWrapper {
-            display: none;
-        }
-
-        #readerWrapper.active {
-            display: block;
-        }
-
+        /* Contenedor del Escáner optimizado para pantallas táctiles */
         #reader {
             width: 100%;
-            background: #000;
+            background: #000000;
             border-radius: 10px;
             overflow: hidden;
-            border: 2px solid var(--border);
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            border: 2px solid #e9ecef;
         }
 
+        /* Forzar que los botones internos de la librería se adapten al estilo móvil */
         #reader button {
-            background-color: #374151 !important;
+            background-color: #6c757d !important;
             color: white !important;
             border: none !important;
             padding: 8px 14px !important;
             border-radius: 6px !important;
+            font-size: 14px !important;
             margin: 8px auto !important;
-            font-family: 'DM Sans', sans-serif !important;
-        }
-
-        #scanProgress {
-            display: none;
-            height: 4px;
-            background: var(--border);
-            border-radius: 99px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-
-        #scanProgress.active {
-            display: block;
-        }
-
-        #scanProgressBar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--accent), var(--accent2));
-            border-radius: 99px;
-            transition: width 1.5s linear;
-        }
-
-        .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            padding: 13px;
-            border: none;
-            border-radius: var(--radius);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            font-weight: 600;
             cursor: pointer;
         }
 
-        .btn-scan {
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            color: white;
-            margin-bottom: 14px;
-        }
-
-        .btn-search {
-            background: var(--surface2);
-            color: var(--text);
-            border: 1px solid var(--border);
-            padding: 0 16px;
-            width: auto;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #16a34a, #15803d);
-            color: white;
-            margin-top: 8px;
-            padding: 16px;
-            font-size: 16px;
-        }
-
-        .btn-reset {
-            background: var(--surface2);
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
+        /* Grupo de búsqueda manual */
         .search-group {
             display: flex;
             gap: 8px;
+            margin-bottom: 12px;
         }
 
         .search-group input {
             flex: 1;
+            margin-top: 0;
         }
 
+        .btn-search {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Estructura de formularios amigables al tacto */
         label {
             display: block;
-            font-size: 12px;
+            margin-top: 14px;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-            margin-top: 16px;
+            font-size: 14px;
+            color: #495057;
         }
 
         input[type="text"],
@@ -213,81 +111,48 @@
         textarea,
         select {
             width: 100%;
-            padding: 12px 14px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
+            padding: 12px; /* Más alto para que sea fácil presionar con el dedo */
+            margin-top: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px; /* Evita que iOS Safari haga zoom automático al enfocar */
+            background-color: #fff;
+            transition: border-color 0.2s;
         }
 
-        textarea {
-            resize: none;
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
         }
 
+        /* Estado deshabilitado visualmente claro */
+        input:disabled, textarea:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+            border-color: #dee2e6;
+        }
+
+        /* Alertas de Estado */
         #statusBadge {
-            margin: 14px 0 4px;
+            margin: 8px 0;
+            min-height: 28px;
         }
 
         .badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .badge-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-
-        .badge-info {
-            background: rgba(79,142,247,0.12);
-            color: var(--accent);
-        }
-
-        .badge-new {
-            background: rgba(245,158,11,0.12);
-            color: var(--warning);
-        }
-
-        .badge-exists {
-            background: rgba(34,197,94,0.12);
-            color: var(--success);
-        }
-
-        .badge-info .badge-dot {
-            background: var(--accent);
-        }
-
-        .badge-new .badge-dot {
-            background: var(--warning);
-        }
-
-        .badge-exists .badge-dot {
-            background: var(--success);
-        }
-
-        .cantidad-sistema {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .selector-coincidencias {
-            display: none;
-            margin-top: 12px;
-        }
-
-        .selector-coincidencias.show {
             display: block;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
         }
+        .badge-info { background: #e2f0fe; color: var(--primary); }
+        .badge-new { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .badge-exists { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 
+        /* Botones de opción de Existencias grandes */
         .radio-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -296,356 +161,243 @@
         }
 
         .radio-tile {
-            position: relative;
-            cursor: pointer;
-        }
-
-        .radio-tile input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-        }
-
-        .radio-tile-inner {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            background: var(--surface2);
-            border: 2px solid var(--border);
+            background: #fff;
+            border: 1px solid var(--border-color);
             padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
             font-weight: 600;
-            color: var(--text-muted);
+            font-size: 15px;
+            transition: all 0.2s;
+            text-align: center;
         }
 
-        .radio-tile input:checked + .radio-tile-inner {
-            border-color: var(--accent);
-            color: var(--accent);
+        /* Ocultamos el radio button real de la vista */
+        .radio-tile input[type="radio"] {
+            margin-right: 8px;
+            transform: scale(1.1);
         }
 
-        .divider {
+        /* Efecto cuando se selecciona un estado */
+        .radio-container input[type="radio"]:checked + span {
+            font-weight: 700;
+        }
+        
+        /* Contenedor de acción principal */
+        .btn-submit {
+            width: 100%;
+            background: var(--success);
+            color: white;
             border: none;
-            border-top: 1px solid var(--border);
-            margin: 20px 0;
+            padding: 14px;
+            margin-top: 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(40,167,69,0.2);
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: #218838;
+        }
+
+        .btn-submit:disabled {
+            background: #a4dfb2;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        hr {
+            margin: 22px 0 14px 0;
+            border: 0;
+            border-top: 1px solid #dee2e6;
         }
     </style>
 </head>
-
 <body>
 
 <div class="container">
-
-    <div class="header">
-        <div class="header-icon">📦</div>
-        <div>
-            <h1>Control de Inventario</h1>
-            <p>Escanea o busca un producto para registrar</p>
-        </div>
-    </div>
-
-    <!-- SCANNER -->
-    <div class="card">
-        <div class="card-title">📷 Escáner QR / Código de barras</div>
-
-        <button class="btn btn-scan" id="btnScan" onclick="toggleScanner()">
-            📷 <span id="btnScanText">Abrir Cámara</span>
-        </button>
-
-        <div id="readerWrapper">
-            <div id="reader"></div>
-
-            <div id="scanProgress">
-                <div id="scanProgressBar"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- BÚSQUEDA -->
-    <div class="card">
-
-        <div class="card-title">🔍 Búsqueda manual</div>
-
+    <h2>Registro de Inventario</h2>
+    
+    <!-- Lector de cámara unificado -->
+    <div id="reader"></div>
+    
+    <form id="inventoryForm">
+        
+        <label>Código Escaneado / Manual</label>
         <div class="search-group">
-            <input type="text" id="codigo" placeholder="Código o nombre del producto...">
-            <button class="btn btn-search" onclick="buscarManual()">Buscar</button>
+            <input type="text" id="codigo" required placeholder="Código de barras o QR">
+            <button type="button" class="btn-search" onclick="buscarCodigoManual()">Buscar</button>
         </div>
-
-        <div id="wrapperCoincidencias" class="selector-coincidencias">
-            <select id="selectCoincidencias" onchange="seleccionarProducto()">
-                <option value="">-- Selecciona el producto --</option>
-            </select>
-        </div>
-
+        
+        <!-- Indicador de estado del código -->
         <div id="statusBadge"></div>
-    </div>
-
-    <!-- FORM -->
-    <div class="card" id="formCard" style="display:none;">
-
-        <div class="card-title">📝 Datos del producto</div>
 
         <label>Nombre del Producto</label>
-        <input type="text" id="producto" disabled>
+        <input type="text" id="producto" disabled required placeholder="Nombre automático o nuevo">
 
-        <label>Ubicación</label>
-        <input type="text" id="ubicacion" disabled>
+        <label>Ubicación en Almacén</label>
+        <input type="text" id="ubicacion" disabled placeholder="Ej. Estante B3 / Pasillo 2">
 
-        <hr class="divider">
+        <hr>
 
-        <label>Estado</label>
-
+        <label>Estado de Revisión</label>
         <div class="radio-container">
-
             <label class="radio-tile">
                 <input type="radio" name="estado" value="En existencia" checked>
-                <div class="radio-tile-inner">✅ En existencia</div>
+                <span>En existencias</span>
             </label>
-
             <label class="radio-tile">
                 <input type="radio" name="estado" value="Sin existencia">
-                <div class="radio-tile-inner">❌ Sin existencia</div>
+                <span>Sin existencias</span>
             </label>
-
         </div>
 
-        <label>Cantidad</label>
-        <input type="number" id="cantidad" min="0">
+        <label>Cantidad de Piezas</label>
+        <input type="number" id="cantidad" required placeholder="0" min="0" inputmode="numeric">
 
-        <label>Comentario</label>
-        <textarea id="comentario" rows="2"></textarea>
+        <label>Comentario / Última Observación</label>
+        <textarea id="comentario" rows="2" placeholder="Escribe aquí novedades del ítem..."></textarea>
 
-        <button class="btn btn-submit" id="submitBtn" onclick="guardar()">
-            💾 <span id="submitText">Guardar en Google Sheets</span>
-        </button>
-
-        <button class="btn btn-reset" onclick="resetForm()">
-            ↩ Nuevo registro
-        </button>
-
-    </div>
-
+        <button type="submit" id="submitBtn" class="btn-submit">Guardar en Google Sheets</button>
+    </form>
 </div>
 
 <script>
+    // URL Generada por tu Google Apps Script
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxubcJLZDt-f2QkLo-0Af-WwLakndYrwBOrt3Z6_NWeHMJJp5eFKuLAb2410n--nMY36A/exec";
+    let filaActualizar = null; 
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxubcJLZDt-f2QkLo-0Af-WwLakndYrwBOrt3Z6_NWeHMJJp5eFKuLAb2410n--nMY36A/exec";
+    // Configuración móvil del escáner
+    function onScanSuccess(decodedText, decodedResult) {
+        document.getElementById('codigo').value = decodedText;
+        // Detener cámara momentáneamente para evitar bucles de lectura rápidos
+        html5QrcodeScanner.clear();
+        procesarCodigo(decodedText);
+    }
 
-let filaActualizar = null;
-let listaResultados = [];
-let scanTimer = null;
-let ultimoCodigo = "";
-let scannerActivo = false;
-let html5QrcodeScanner = null;
-
-function toggleScanner() {
-    if (scannerActivo) cerrarScanner();
-    else abrirScanner();
-}
-
-function abrirScanner() {
-
-    document.getElementById('readerWrapper').classList.add('active');
-    document.getElementById('btnScanText').textContent = "Cerrar Cámara";
-
-    scannerActivo = true;
-
-    html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-        fps: 10,
-        qrbox: { width: 250, height: 120 },
+    // Adaptado con un recuadro de escaneo responsivo
+    var html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+        fps: 15, 
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+            // El recuadro se adapta dinámicamente según la pantalla del móvil
+            var minEdgePercent = 0.70; 
+            var minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+            var qrboxSize = Math.floor(minEdgeSize * minEdgePercent);
+            return {
+                width: qrboxSize,
+                height: Math.floor(qrboxSize * 0.6) // Ajustado rectangular para códigos de barra horizontales
+            };
+        },
         rememberLastUsedCamera: true
     });
-
+    
     html5QrcodeScanner.render(onScanSuccess);
-}
 
-function cerrarScanner() {
-
-    if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear().catch(() => {});
-        html5QrcodeScanner = null;
+    function buscarCodigoManual() {
+        const cod = document.getElementById('codigo').value;
+        if(cod) procesarCodigo(cod);
     }
 
-    document.getElementById('readerWrapper').classList.remove('active');
-    document.getElementById('btnScanText').textContent = "Abrir Cámara";
+    // 2. Comunicar con Sheets para saber si existe el código
+    function procesarCodigo(codigo) {
+        const badgeZone = document.getElementById('statusBadge');
+        badgeZone.innerHTML = "<span>Buscando en Sheets...</span>";
 
-    scannerActivo = false;
-}
-
-function onScanSuccess(decodedText) {
-
-    if (decodedText === ultimoCodigo) return;
-
-    ultimoCodigo = decodedText;
-
-    document.getElementById('codigo').value = decodedText;
-
-    cerrarScanner();
-
-    buscarCodigo(decodedText);
-}
-
-function buscarManual() {
-
-    const cod = document.getElementById('codigo').value.trim();
-
-    if (cod) buscarCodigo(cod);
-}
-
-function buscarCodigo(texto) {
-
-    const badge = document.getElementById('statusBadge');
-
-    badge.innerHTML =
-        '<div class="badge badge-info"><span class="badge-dot"></span>Buscando...</div>';
-
-    fetch(WEB_APP_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-            accion: "buscar",
-            codigo: texto
-        })
-    })
-
-    // ... Dentro de tu función de búsqueda en el JS de tu página:
-.then(response => response.json())
-.then(data => {
-  if (!data.encontrado) {
-    // Es un producto totalmente nuevo
-    filaActualizar = null; 
-    alert("Producto nuevo detectado. Completa los campos para registrar.");
-    // Habilitar campos vacíos...
-    return;
-  }
-  
-  if (data.multiples) {
-    // ¡Aquí está el truco! Si hay múltiples coincidencias:
-    // 1. Muestras un contenedor/modal o un <select> que tenías oculto.
-    // 2. Llenas ese <select> con las opciones de data.lista.
-    
-    let selector = document.getElementById("tuSelectorDeCoincidencias");
-    selector.innerHTML = '<option value="">-- Selecciona cuál deseas actualizar --</option>';
-    
-    // Guardamos la lista globalmente para acceder a ella cuando el usuario haga clic en el select
-    misCoincidenciasGlobales = data.lista; 
-    
-    data.lista.forEach((item, index) => {
-      selector.innerHTML += `<option value="${index}">${item.codigoCompleto} - ${item.producto} (${item.ubicacion})</option>`;
-    });
-    
-    // Mostramos el elemento visual del selector al usuario
-    document.getElementById("contenedorMultiples").style.display = "block";
-    
-  } else {
-    // Si solo hay uno, cargas los datos directamente en el formulario como hacías antes
-    filaActualizar = data.fila;
-    document.getElementById("codigo").value = data.codigoCompleto; // Carga el código real (ej: con SO)
-    document.getElementById("producto").value = data.producto;
-    document.getElementById("ubicacion").value = data.ubicacion;
-    // ... cargar los demás campos ...
-  }
-});
-
-// Función que se ejecuta cuando el usuario SELECCIONA una de las múltiples opciones:
-function usuarioSeleccionoOpcion(index) {
-  if(index === "") return;
-  
-  var productoSeleccionado = misCoincidenciasGlobales[index];
-  
-  // Asignamos la fila correcta que elegió el usuario
-  filaActualizar = productoSeleccionado.fila; 
-  
-  // Rellenamos el formulario con los datos específicos de esa fila individual
-  document.getElementById("codigo").value = productoSeleccionado.codigoCompleto;
-  document.getElementById("producto").value = productoSeleccionado.producto;
-  document.getElementById("ubicacion").value = productoSeleccionado.ubicacion;
-  
-  // Ocultamos el selector ya que la decisión fue tomada
-  document.getElementById("contenedorMultiples").style.display = "none";
-}
-
-    document.getElementById('producto').disabled = true;
-    document.getElementById('ubicacion').disabled = true;
-
-    filaActualizar = item.fila;
-
-    document.getElementById('formCard').style.display = "block";
-}
-
-async function guardar() {
-
-    const btn = document.getElementById('submitBtn');
-    const txt = document.getElementById('submitText');
-
-    btn.disabled = true;
-    txt.textContent = "Guardando...";
-
-    const payload = {
-
-        accion: "registrar",
-
-        filaActualizar: filaActualizar,
-
-        codigo: document.getElementById('codigo').value,
-
-        producto: document.getElementById('producto').value,
-
-        ubicacion: document.getElementById('ubicacion').value,
-
-        estado: document.querySelector('input[name="estado"]:checked').value,
-
-        cantidad: document.getElementById('cantidad').value,
-
-        comentario: document.getElementById('comentario').value
-    };
-
-    try {
-
-        const res = await fetch(WEB_APP_URL, {
+        fetch(WEB_APP_URL, {
             method: 'POST',
-            body: JSON.stringify(payload)
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ accion: "buscar", codigo: codigo })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                alert("Error en el servidor: " + data.error);
+                return;
+            }
+            if (data.encontrado) {
+                // Muestra el estado del producto y cuántas piezas figuran en sistema (Columna E)
+                badgeZone.innerHTML = `<span class="badge badge-exists">Producto Encontrado</span><br><small style="color:#666;">Cantidad en Sistema: <b>${data.cantidadSistema || 0}</b> piezas.</small>`;
+                
+                document.getElementById('producto').value = data.producto;
+                document.getElementById('ubicacion').value = data.ubicacion;
+                
+                // Bloquear campos base porque ya existen
+                document.getElementById('producto').disabled = true;
+                document.getElementById('ubicacion').disabled = true;
+                filaActualizar = data.fila; 
+            } else {
+                badgeZone.innerHTML = '<span class="badge badge-new">¡Código Nuevo! Complete el registro</span>';
+                alert("El código no se encuentra registrado. Ingrese el nombre, ubicación y conteo inicial.");
+                
+                document.getElementById('producto').value = "";
+                document.getElementById('ubicacion').value = "";
+                document.getElementById('producto').disabled = false;
+                document.getElementById('ubicacion').disabled = false;
+                filaActualizar = null;
+            }
+            document.getElementById('cantidad').focus();
+        })
+        .catch(err => {
+            console.error(err);
+            badgeZone.innerHTML = "<span>Error de conexión al buscar</span>";
         });
-
-        const data = await res.json();
-
-        if (data.resultado === "Éxito") {
-
-            alert("✅ Inventario actualizado correctamente.");
-
-            resetForm();
-
-        } else {
-
-            alert("⚠️ Error");
-        }
-
-    } catch (error) {
-
-        alert("❌ No se pudo conectar con Google Sheets.");
     }
 
-    btn.disabled = false;
+    // 3. Enviar datos finales de Guardado / Modificación
+    document.getElementById('inventoryForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "Guardando...";
 
-    txt.textContent = "Guardar en Google Sheets";
-}
+        const payload = {
+            accion: "registrar",
+            filaActualizar: filaActualizar,
+            codigo: document.getElementById('codigo').value,
+            producto: document.getElementById('producto').value,
+            ubicacion: document.getElementById('ubicacion').value,
+            // Conservamos el estado en el envío por si lo requieres, aunque ahora priorizamos cantidades físicas directas
+            estado: document.querySelector('input[name="estado"]:checked').value,
+            cantidad: document.getElementById('cantidad').value,
+            comentario: document.getElementById('comentario').value
+        };
 
-function resetForm() {
-
-    document.getElementById('codigo').value = "";
-    document.getElementById('producto').value = "";
-    document.getElementById('ubicacion').value = "";
-    document.getElementById('cantidad').value = "";
-    document.getElementById('comentario').value = "";
-
-    document.getElementById('statusBadge').innerHTML = "";
-
-    document.getElementById('wrapperCoincidencias').classList.remove('show');
-
-    document.getElementById('formCard').style.display = "none";
-
-    filaActualizar = null;
-}
-
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.error) {
+                alert("Error al guardar en Sheets: " + data.error);
+            } else {
+                alert("Inventario y Diferencias actualizados con éxito en Google Sheets.");
+                document.getElementById('inventoryForm').reset();
+                document.getElementById('statusBadge').innerHTML = "";
+                filaActualizar = null;
+                
+                // Reiniciar la cámara para dejarla lista para el próximo ítem
+                html5QrcodeScanner.render(onScanSuccess);
+            }
+            btn.disabled = false;
+            btn.innerText = "Guardar en Google Sheets";
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error de red. Revisa tu conexión a internet.");
+            btn.disabled = false;
+            btn.innerText = "Guardar en Google Sheets";
+        });
+    });
 </script>
 
 </body>
