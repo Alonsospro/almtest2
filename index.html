@@ -507,74 +507,62 @@ function buscarCodigo(texto) {
         })
     })
 
-    .then(r => r.json())
-
-    .then(data => {
-
-        if (!data.encontrado) {
-
-            badge.innerHTML =
-                '<div class="badge badge-new"><span class="badge-dot"></span>Producto nuevo</div>';
-
-            document.getElementById('producto').value = "";
-            document.getElementById('ubicacion').value = "";
-
-            document.getElementById('producto').disabled = false;
-            document.getElementById('ubicacion').disabled = false;
-
-            filaActualizar = null;
-
-            document.getElementById('formCard').style.display = "block";
-
-            return;
-        }
-
-        listaResultados = data.lista;
-
-        if (data.multiples) {
-
-            let opts = '<option value="">Selecciona...</option>';
-
-            data.lista.forEach((item, i) => {
-                opts += `<option value="${i}">${item.producto}</option>`;
-            });
-
-            document.getElementById('selectCoincidencias').innerHTML = opts;
-
-            document.getElementById('wrapperCoincidencias').classList.add('show');
-
-        } else {
-
-            cargarProducto(data.lista[0]);
-        }
-    })
-
-    .catch(() => {
-
-        badge.innerHTML =
-            '<div class="badge badge-new"><span class="badge-dot"></span>Error de conexión</div>';
+    // ... Dentro de tu función de búsqueda en el JS de tu página:
+.then(response => response.json())
+.then(data => {
+  if (!data.encontrado) {
+    // Es un producto totalmente nuevo
+    filaActualizar = null; 
+    alert("Producto nuevo detectado. Completa los campos para registrar.");
+    // Habilitar campos vacíos...
+    return;
+  }
+  
+  if (data.multiples) {
+    // ¡Aquí está el truco! Si hay múltiples coincidencias:
+    // 1. Muestras un contenedor/modal o un <select> que tenías oculto.
+    // 2. Llenas ese <select> con las opciones de data.lista.
+    
+    let selector = document.getElementById("tuSelectorDeCoincidencias");
+    selector.innerHTML = '<option value="">-- Selecciona cuál deseas actualizar --</option>';
+    
+    // Guardamos la lista globalmente para acceder a ella cuando el usuario haga clic en el select
+    misCoincidenciasGlobales = data.lista; 
+    
+    data.lista.forEach((item, index) => {
+      selector.innerHTML += `<option value="${index}">${item.codigoCompleto} - ${item.producto} (${item.ubicacion})</option>`;
     });
+    
+    // Mostramos el elemento visual del selector al usuario
+    document.getElementById("contenedorMultiples").style.display = "block";
+    
+  } else {
+    // Si solo hay uno, cargas los datos directamente en el formulario como hacías antes
+    filaActualizar = data.fila;
+    document.getElementById("codigo").value = data.codigoCompleto; // Carga el código real (ej: con SO)
+    document.getElementById("producto").value = data.producto;
+    document.getElementById("ubicacion").value = data.ubicacion;
+    // ... cargar los demás campos ...
+  }
+});
+
+// Función que se ejecuta cuando el usuario SELECCIONA una de las múltiples opciones:
+function usuarioSeleccionoOpcion(index) {
+  if(index === "") return;
+  
+  var productoSeleccionado = misCoincidenciasGlobales[index];
+  
+  // Asignamos la fila correcta que elegió el usuario
+  filaActualizar = productoSeleccionado.fila; 
+  
+  // Rellenamos el formulario con los datos específicos de esa fila individual
+  document.getElementById("codigo").value = productoSeleccionado.codigoCompleto;
+  document.getElementById("producto").value = productoSeleccionado.producto;
+  document.getElementById("ubicacion").value = productoSeleccionado.ubicacion;
+  
+  // Ocultamos el selector ya que la decisión fue tomada
+  document.getElementById("contenedorMultiples").style.display = "none";
 }
-
-function seleccionarProducto() {
-
-    const idx = document.getElementById('selectCoincidencias').value;
-
-    if (idx !== "") cargarProducto(listaResultados[idx]);
-}
-
-function cargarProducto(item) {
-
-    document.getElementById('statusBadge').innerHTML = `
-        <div class="badge badge-exists">
-            <span class="badge-dot"></span>
-            Producto encontrado
-        </div>
-    `;
-
-    document.getElementById('codigo').value = item.codigo;
-    document.getElementById('producto').value = item.producto;
-    document.getElementById('ubicacion').value = item.ubicacion;
 
     document.getElementById('producto').disabled = true;
     document.getElementById('ubicacion').disabled = true;
