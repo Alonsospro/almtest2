@@ -304,30 +304,37 @@
         if(cod) procesarCodigo(cod);
     }
 
+    // 2. Comunicar con Sheets para saber si existe el código
     function procesarCodigo(codigo) {
         const badgeZone = document.getElementById('statusBadge');
-        badgeZone.innerHTML = '<span class="badge badge-info">Buscando producto...</span>';
+        badgeZone.innerHTML = "<span>Buscando en Sheets...</span>";
 
         fetch(WEB_APP_URL, {
             method: 'POST',
+            mode: 'cors',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ accion: "buscar", codigo: codigo })
         })
-        .then(res => {
-            if (!res.ok) throw new Error();
-            return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
+            if (data.error) {
+                alert("Error en el servidor: " + data.error);
+                return;
+            }
             if (data.encontrado) {
-                badgeZone.innerHTML = '<span class="badge badge-exists">✓ Producto Encontrado</span>';
+                // Muestra el estado del producto y cuántas piezas figuran en sistema (Columna E)
+                badgeZone.innerHTML = `<span class="badge badge-exists">Producto Encontrado</span><br><small style="color:#666;">Cantidad en Sistema: <b>${data.cantidadSistema || 0}</b> piezas.</small>`;
+                
                 document.getElementById('producto').value = data.producto;
                 document.getElementById('ubicacion').value = data.ubicacion;
                 
+                // Bloquear campos base porque ya existen
                 document.getElementById('producto').disabled = true;
                 document.getElementById('ubicacion').disabled = true;
                 filaActualizar = data.fila; 
             } else {
-                badgeZone.innerHTML = '<span class="badge badge-new">+ Código Nuevo detectado</span>';
+                badgeZone.innerHTML = '<span class="badge badge-new">¡Código Nuevo! Complete el registro</span>';
+                alert("El código no se encuentra registrado. Ingrese el nombre, ubicación y conteo inicial.");
                 
                 document.getElementById('producto').value = "";
                 document.getElementById('ubicacion').value = "";
@@ -335,19 +342,20 @@
                 document.getElementById('ubicacion').disabled = false;
                 filaActualizar = null;
             }
-            // Mover el foco directamente a la cantidad para agilizar el proceso manual
             document.getElementById('cantidad').focus();
         })
         .catch(err => {
-            badgeZone.innerHTML = "<span class='badge' style='background:#f8d7da; color:#721c24;'>Error al conectar con la base de datos</span>";
+            console.error(err);
+            badgeZone.innerHTML = "<span>Error de conexión al buscar</span>";
         });
     }
 
+    // 3. Enviar datos finales de Guardado / Modificación
     document.getElementById('inventoryForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
         btn.disabled = true;
-        btn.innerText = "Sincronizando...";
+        btn.innerText = "Guardando...";
 
         const payload = {
             accion: "registrar",
@@ -355,6 +363,7 @@
             codigo: document.getElementById('codigo').value,
             producto: document.getElementById('producto').value,
             ubicacion: document.getElementById('ubicacion').value,
+            // Conservamos el estado en el envío por si lo requieres, aunque ahora priorizamos cantidades físicas directas
             estado: document.querySelector('input[name="estado"]:checked').value,
             cantidad: document.getElementById('cantidad').value,
             comentario: document.getElementById('comentario').value
@@ -362,20 +371,29 @@
 
         fetch(WEB_APP_URL, {
             method: 'POST',
-            mode: 'no-cors',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload)
-        }).then(() => {
-            alert("Inventario guardado de forma segura.");
-            document.getElementById('inventoryForm').reset();
-            document.getElementById('statusBadge').innerHTML = "";
-            filaActualizar = null;
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.error) {
+                alert("Error al guardar en Sheets: " + data.error);
+            } else {
+                alert("Inventario y Diferencias actualizados con éxito en Google Sheets.");
+                document.getElementById('inventoryForm').reset();
+                document.getElementById('statusBadge').innerHTML = "";
+                filaActualizar = null;
+                
+                // Reiniciar la cámara para dejarla lista para el próximo ítem
+                html5QrcodeScanner.render(onScanSuccess);
+            }
             btn.disabled = false;
             btn.innerText = "Guardar en Google Sheets";
-            
-            // Reactivar la cámara automáticamente para la siguiente lectura
-            html5QrcodeScanner.render(onScanSuccess);
-        }).catch(err => {
-            alert("Error de red al intentar guardar.");
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error de red. Revisa tu conexión a internet.");
             btn.disabled = false;
             btn.innerText = "Guardar en Google Sheets";
         });
