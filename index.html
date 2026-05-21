@@ -273,31 +273,49 @@
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCg1k_gOQmzFSfIEfIktUS9LcTOSQT1y1RIaXEBh_LbgiSSHhz_7gppFbNGOuiur9rRw/exec";
     let filaActualizar = null; 
 
-    // Configuración móvil del escáner
-    function onScanSuccess(decodedText, decodedResult) {
-        document.getElementById('codigo').value = decodedText;
-        // Detener cámara momentáneamente para evitar bucles de lectura rápidos
-        html5QrcodeScanner.clear();
-        procesarCodigo(decodedText);
+   // Reemplaza estas dos partes en tu HTML:
+
+// 1. VARIABLE para el temporizador (agrégala junto a las otras variables arriba)
+let scanTimer = null;
+let ultimoCodigoEscaneado = "";
+
+// 2. REEMPLAZA la función onScanSuccess completa
+function onScanSuccess(decodedText, decodedResult) {
+    // Si es el mismo código que ya está procesando, ignorar
+    if (decodedText === ultimoCodigoEscaneado) return;
+    
+    // Cancelar cualquier temporizador previo (si movió la cámara a otro código)
+    if (scanTimer) {
+        clearTimeout(scanTimer);
+        scanTimer = null;
     }
 
-    // Adaptado con un recuadro de escaneo responsivo
-    var html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-        fps: 15, 
-        qrbox: function(viewfinderWidth, viewfinderHeight) {
-            // El recuadro se adapta dinámicamente según la pantalla del móvil
-            var minEdgePercent = 0.70; 
-            var minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-            var qrboxSize = Math.floor(minEdgeSize * minEdgePercent);
-            return {
-                width: qrboxSize,
-                height: Math.floor(qrboxSize * 0.6) // Ajustado rectangular para códigos de barra horizontales
-            };
-        },
-        rememberLastUsedCamera: true
-    });
+    ultimoCodigoEscaneado = decodedText;
     
-    html5QrcodeScanner.render(onScanSuccess);
+    // Mostrar feedback visual de que está "enfocando"
+    document.getElementById('statusBadge').innerHTML = 
+        '<span class="badge badge-info">📷 Código detectado, mantenlo quieto...</span>';
+
+    // Esperar 1.5 segundos antes de procesar
+    scanTimer = setTimeout(function() {
+        document.getElementById('codigo').value = decodedText;
+        html5QrcodeScanner.clear();
+        ultimoCodigoEscaneado = "";
+        scanTimer = null;
+        procesarCodigo(decodedText);
+    }, 1500);
+}
+
+// 3. REEMPLAZA la inicialización del scanner
+var html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+    fps: 10, // Bajamos de 15 a 10 para no sobrecargar
+    qrbox: function(w, h) {
+        var size = Math.floor(Math.min(w, h) * 0.70);
+        return { width: size, height: Math.floor(size * 0.6) };
+    },
+    rememberLastUsedCamera: true
+});
+html5QrcodeScanner.render(onScanSuccess);
 
     function buscarCodigoManual() {
         const cod = document.getElementById('codigo').value;
