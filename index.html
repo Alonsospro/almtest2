@@ -2,10 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <!-- Línea vital para que el celular no auto-asigne un zoom diminuto y se adapte a su pantalla -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Control de Inventario Móvil</title>
-    <!-- Librería oficial para escaneo de QR y Barras -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     
     <style>
@@ -20,204 +18,46 @@
             --border-color: #ced4da;
         }
 
-        * {
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-dark); margin: 0; padding: 12px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 540px; background: #ffffff; padding: 20px 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        h2 { text-align: center; margin-top: 0; margin-bottom: 18px; font-size: 22px; font-weight: 700; }
+        #reader { width: 100%; background: #000; border-radius: 10px; overflow: hidden; margin-bottom: 16px; border: 2px solid #e9ecef; }
+        #reader button { background-color: #6c757d !important; color: white !important; border: none !important; padding: 8px 14px !important; border-radius: 6px !important; margin: 8px auto !important; }
+        
+        .search-group { display: flex; gap: 8px; margin-bottom: 12px; }
+        .search-group input { flex: 1; margin-top: 0; }
+        .btn-search { background: #6c757d; color: white; border: none; padding: 0 16px; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        
+        /* Selector de múltiples coincidencias */
+        .selector-coincidencias {
+            background: #e2f0fe;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            border: 1px solid #b8daff;
+            display: none; /* Oculto por defecto */
         }
+        .selector-coincidencias p { margin: 0 0 6px 0; font-size: 13px; font-weight: bold; color: #004085; }
 
-        body {
-            background-color: var(--bg-body);
-            color: var(--text-dark);
-            margin: 0;
-            padding: 12px;
-            display: flex;
-            justify-content: center;
-        }
+        label { display: block; margin-top: 14px; font-weight: 600; font-size: 14px; color: #495057; }
+        input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 16px; background-color: #fff; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,123,255,0.15); }
+        input:disabled, textarea:disabled { background-color: #e9ecef; color: #6c757d; border-color: #dee2e6; }
 
-        .container {
-            width: 100%;
-            max-width: 540px; /* Tamaño ideal para operar a una mano */
-            background: #ffffff;
-            padding: 20px 16px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
-        h2 {
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 18px;
-            font-size: 22px;
-            color: #111;
-            font-weight: 700;
-        }
-
-        /* Contenedor del Escáner optimizado para pantallas táctiles */
-        #reader {
-            width: 100%;
-            background: #000000;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 16px;
-            border: 2px solid #e9ecef;
-        }
-
-        /* Forzar que los botones internos de la librería se adapten al estilo móvil */
-        #reader button {
-            background-color: #6c757d !important;
-            color: white !important;
-            border: none !important;
-            padding: 8px 14px !important;
-            border-radius: 6px !important;
-            font-size: 14px !important;
-            margin: 8px auto !important;
-            cursor: pointer;
-        }
-
-        /* Grupo de búsqueda manual */
-        .search-group {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .search-group input {
-            flex: 1;
-            margin-top: 0;
-        }
-
-        .btn-search {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 0 16px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        /* Estructura de formularios amigables al tacto */
-        label {
-            display: block;
-            margin-top: 14px;
-            font-weight: 600;
-            font-size: 14px;
-            color: #495057;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 12px; /* Más alto para que sea fácil presionar con el dedo */
-            margin-top: 5px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 16px; /* Evita que iOS Safari haga zoom automático al enfocar */
-            background-color: #fff;
-            transition: border-color 0.2s;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
-        }
-
-        /* Estado deshabilitado visualmente claro */
-        input:disabled, textarea:disabled {
-            background-color: #e9ecef;
-            color: #6c757d;
-            cursor: not-allowed;
-            border-color: #dee2e6;
-        }
-
-        /* Alertas de Estado */
-        #statusBadge {
-            margin: 8px 0;
-            min-height: 28px;
-        }
-
-        .badge {
-            display: block;
-            text-align: center;
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: bold;
-        }
+        #statusBadge { margin: 8px 0; min-height: 28px; }
+        .badge { display: block; text-align: center; padding: 8px; border-radius: 6px; font-size: 14px; font-weight: bold; }
         .badge-info { background: #e2f0fe; color: var(--primary); }
         .badge-new { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .badge-exists { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 
-        /* Botones de opción de Existencias grandes */
-        .radio-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 6px;
-        }
-
-        .radio-tile {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #fff;
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 15px;
-            transition: all 0.2s;
-            text-align: center;
-        }
-
-        /* Ocultamos el radio button real de la vista */
-        .radio-tile input[type="radio"] {
-            margin-right: 8px;
-            transform: scale(1.1);
-        }
-
-        /* Efecto cuando se selecciona un estado */
-        .radio-container input[type="radio"]:checked + span {
-            font-weight: 700;
-        }
+        .radio-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+        .radio-tile { display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid var(--border-color); padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 15px; text-align: center; }
+        .radio-tile input[type="radio"] { margin-right: 8px; }
         
-        /* Contenedor de acción principal */
-        .btn-submit {
-            width: 100%;
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 14px;
-            margin-top: 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 17px;
-            font-weight: bold;
-            box-shadow: 0 3px 6px rgba(40,167,69,0.2);
-            transition: background 0.2s;
-        }
-
-        .btn-submit:hover:not(:disabled) {
-            background: #218838;
-        }
-
-        .btn-submit:disabled {
-            background: #a4dfb2;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        document.getElementById('inventoryForm').reset();
-        hr {
-            margin: 22px 0 14px 0;
-            border: 0;
-            border-top: 1px solid #dee2e6;
-        }
+        .btn-submit { width: 100%; background: var(--success); color: white; border: none; padding: 14px; margin-top: 24px; border-radius: 8px; cursor: pointer; font-size: 17px; font-weight: bold; }
+        .btn-submit:disabled { background: #a4dfb2; cursor: not-allowed; }
+        hr { margin: 22px 0 14px 0; border: 0; border-top: 1px solid #dee2e6; }
     </style>
 </head>
 <body>
@@ -225,25 +65,31 @@
 <div class="container">
     <h2>Registro de Inventario</h2>
     
-    <!-- Lector de cámara unificado -->
     <div id="reader"></div>
     
     <form id="inventoryForm">
         
-        <label>Código Escaneado / Manual</label>
+        <label>Buscar Código o Nombre</label>
         <div class="search-group">
-            <input type="text" id="codigo" placeholder="Código de barras o QR">
+            <input type="text" id="codigo" placeholder="Escribe parte del nombre o código...">
             <button type="button" class="btn-search" onclick="buscarCodigoManual()">Buscar</button>
         </div>
+
+        <!-- Zona Desplegable si hay múltiples resultados -->
+        <div id="wrapperCoincidencias" class="selector-coincidencias">
+            <p>Se encontraron múltiples opciones. Selecciona una:</p>
+            <select id="selectCoincidencias" onchange="seleccionarProductoEspecifico()">
+                <!-- Opciones dinámicas -->
+            </select>
+        </div>
         
-        <!-- Indicador de estado del código -->
         <div id="statusBadge"></div>
 
         <label>Nombre del Producto</label>
         <input type="text" id="producto" disabled placeholder="Nombre automático o nuevo">
 
         <label>Ubicación en Almacén</label>
-        <input type="text" id="ubicacion" disabled placeholder="Ej. Estante B3 / Pasillo 2">
+        <input type="text" id="ubicacion" disabled placeholder="Ubicación automática">
 
         <hr>
 
@@ -270,34 +116,25 @@
 </div>
 
 <script>
-    // URL Generada por tu Google Apps Script
+    // URL de tu Google Apps Script
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxWPqP-nskjEqqVNtVIEKDrI51mkfOBCKAwlLkTN9LlFhm_g_TRWasyUVBFI5cBmf6RIQ/exec";
     let filaActualizar = null; 
+    let listaResultadosTemporales = []; // Guarda las coincidencias parciales de la última búsqueda
 
-    // Configuración móvil del escáner
     function onScanSuccess(decodedText, decodedResult) {
         document.getElementById('codigo').value = decodedText;
-        // Detener cámara momentáneamente para evitar bucles de lectura rápidos
         html5QrcodeScanner.clear();
         procesarCodigo(decodedText);
     }
 
-    // Adaptado con un recuadro de escaneo responsivo
     var html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
         fps: 15, 
-        qrbox: function(viewfinderWidth, viewfinderHeight) {
-            // El recuadro se adapta dinámicamente según la pantalla del móvil
-            var minEdgePercent = 0.70; 
-            var minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-            var qrboxSize = Math.floor(minEdgeSize * minEdgePercent);
-            return {
-                width: qrboxSize,
-                height: Math.floor(qrboxSize * 0.6) // Ajustado rectangular para códigos de barra horizontales
-            };
+        qrbox: function(w, h) {
+            var size = Math.floor(Math.min(w, h) * 0.70);
+            return { width: size, height: Math.floor(size * 0.6) };
         },
         rememberLastUsedCamera: true
     });
-    
     html5QrcodeScanner.render(onScanSuccess);
 
     function buscarCodigoManual() {
@@ -305,53 +142,87 @@
         if(cod) procesarCodigo(cod);
     }
 
-    // 2. Comunicar con Sheets para saber si existe el código
-    function procesarCodigo(codigo) {
+    function procesarCodigo(textoBusqueda) {
         const badgeZone = document.getElementById('statusBadge');
-        badgeZone.innerHTML = "<span>Buscando en Sheets...</span>";
+        const wrapper = document.getElementById('wrapperCoincidencias');
+        const selector = document.getElementById('selectCoincidencias');
+        
+        badgeZone.innerHTML = "<span>Buscando coincidencias...</span>";
+        wrapper.style.display = "none";
+        selector.innerHTML = "";
 
         fetch(WEB_APP_URL, {
             method: 'POST',
             mode: 'cors',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ accion: "buscar", codigo: codigo })
+            body: JSON.stringify({ accion: "buscar", codigo: textoBusqueda })
         })
         .then(res => res.json())
         .then(data => {
-            if (data.error) {
-                alert("Error en el servidor: " + data.error);
-                return;
-            }
-            if (data.encontrado) {
-                // Muestra el estado del producto y cuántas piezas figuran en sistema (Columna E)
-                badgeZone.innerHTML = `<span class="badge badge-exists">Producto Encontrado</span><br><small style="color:#666;">Cantidad en Sistema: <b>${data.cantidadSistema || 0}</b> piezas.</small>`;
-                
-                document.getElementById('producto').value = data.producto;
-                document.getElementById('ubicacion').value = data.ubicacion;
-                
-                // Bloquear campos base porque ya existen
-                document.getElementById('producto').disabled = true;
-                document.getElementById('ubicacion').disabled = true;
-                filaActualizar = data.fila; 
-            } else {
-                badgeZone.innerHTML = '<span class="badge badge-new">¡Código Nuevo! Complete el registro</span>';
-                alert("El código no se encuentra registrado. Ingrese el nombre, ubicación y conteo inicial.");
-                
-                document.getElementById('producto').value = "";
+            if (!data.encontrado) {
+                // Caso 1: Código/Nombre completamente nuevo
+                badgeZone.innerHTML = '<span class="badge badge-new">Sin coincidencias. Registro Nuevo</span>';
+                document.getElementById('producto').value = isNaN(textoBusqueda) ? textoBusqueda : "";
                 document.getElementById('ubicacion').value = "";
                 document.getElementById('producto').disabled = false;
                 document.getElementById('ubicacion').disabled = false;
                 filaActualizar = null;
+                return;
             }
-            document.getElementById('cantidad').focus();
+
+            listaResultadosTemporales = data.lista;
+
+            if (data.multiples) {
+                // Caso 2: Múltiples coincidencias encontradas
+                badgeZone.innerHTML = `<span class="badge badge-info">${data.lista.length} opciones encontradas</span>`;
+                
+                // Construir las opciones del selector táctil
+                let htmlOptions = '<option value="">-- Elige el producto correcto --</option>';
+                data.lista.forEach((item, index) => {
+                    htmlOptions += `<option value="${index}">${item.producto} (${item.codigo})</option>`;
+                });
+                selector.innerHTML = htmlOptions;
+                wrapper.style.display = "block"; // Mostrar el cuadro azul de opciones
+                
+                // Limpiar campos base hasta que escoja una opción
+                document.getElementById('producto').value = "";
+                document.getElementById('ubicacion').value = "";
+            } else {
+                // Caso 3: Coincidencia única exacta o parcial unitaria
+                cargarDatosProducto(data.lista[0]);
+            }
         })
         .catch(err => {
             console.error(err);
-            badgeZone.innerHTML = "<span>Error de conexión al buscar</span>";
+            badgeZone.innerHTML = "<span>Error de conexión</span>";
         });
     }
 
-    // 3. Enviar datos finales de Guardado / Modificación
+    // Se ejecuta cuando el usuario selecciona un ítem de la lista desplegable
+    function seleccionarProductoEspecifico() {
+        const idx = document.getElementById('selectCoincidencias').value;
+        if(idx !== "") {
+            cargarDatosProducto(listaResultadosTemporales[idx]);
+        }
+    }
+
+    // Rellena el formulario con la opción elegida
+    function cargarDatosProducto(item) {
+        const badgeZone = document.getElementById('statusBadge');
+        badgeZone.innerHTML = `<span class="badge badge-exists">Seleccionado</span><br><small style="color:#666;">Cantidad en Sistema: <b>${item.cantidadSistema || 0}</b> piezas.</small>`;
+        
+        document.getElementById('codigo').value = item.codigo;
+        document.getElementById('producto').value = item.producto;
+        document.getElementById('ubicacion').value = item.ubicacion;
+        
+        document.getElementById('producto').disabled = true;
+        document.getElementById('ubicacion').disabled = true;
+        filaActualizar = item.fila; 
+        
+        document.getElementById('cantidad').focus();
+    }
+
+    // Envío del formulario
     document.getElementById('inventoryForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
@@ -364,7 +235,6 @@
             codigo: document.getElementById('codigo').value,
             producto: document.getElementById('producto').value,
             ubicacion: document.getElementById('ubicacion').value,
-            // Conservamos el estado en el envío por si lo requieres, aunque ahora priorizamos cantidades físicas directas
             estado: document.querySelector('input[name="estado"]:checked').value,
             cantidad: document.getElementById('cantidad').value,
             comentario: document.getElementById('comentario').value
@@ -378,28 +248,21 @@
         })
         .then(res => res.json())
         .then(data => {
-            if(data.error) {
-                alert("Error al guardar en Sheets: " + data.error);
-            } else {
-                alert("Inventario y Diferencias actualizados con éxito en Google Sheets.");
-                document.getElementById('inventoryForm').reset();
-                document.getElementById('statusBadge').innerHTML = "";
-                filaActualizar = null;
-                
-                // Reiniciar la cámara para dejarla lista para el próximo ítem
-                html5QrcodeScanner.render(onScanSuccess);
-            }
+            alert("Inventario actualizado correctamente.");
+            document.getElementById('inventoryForm').reset();
+            document.getElementById('statusBadge').innerHTML = "";
+            document.getElementById('wrapperCoincidencias').style.display = "none";
+            filaActualizar = null;
+            html5QrcodeScanner.render(onScanSuccess);
             btn.disabled = false;
             btn.innerText = "Guardar en Google Sheets";
         })
         .catch(err => {
-            console.error(err);
-            alert("Error de red. Revisa tu conexión a internet.");
+            alert("Error de red al guardar.");
             btn.disabled = false;
             btn.innerText = "Guardar en Google Sheets";
         });
     });
 </script>
-
 </body>
 </html>
