@@ -212,6 +212,7 @@
             box-shadow: none;
         }
 
+        document.getElementById('inventoryForm').reset();
         hr {
             margin: 22px 0 14px 0;
             border: 0;
@@ -231,7 +232,7 @@
         
         <label>Código Escaneado / Manual</label>
         <div class="search-group">
-            <input type="text" id="codigo" required placeholder="Código de barras o QR">
+            <input type="text" id="codigo" placeholder="Código de barras o QR">
             <button type="button" class="btn-search" onclick="buscarCodigoManual()">Buscar</button>
         </div>
         
@@ -239,7 +240,7 @@
         <div id="statusBadge"></div>
 
         <label>Nombre del Producto</label>
-        <input type="text" id="producto" disabled required placeholder="Nombre automático o nuevo">
+        <input type="text" id="producto" disabled placeholder="Nombre automático o nuevo">
 
         <label>Ubicación en Almacén</label>
         <input type="text" id="ubicacion" disabled placeholder="Ej. Estante B3 / Pasillo 2">
@@ -259,7 +260,7 @@
         </div>
 
         <label>Cantidad de Piezas</label>
-        <input type="number" id="cantidad" required placeholder="0" min="0" inputmode="numeric">
+        <input type="number" id="cantidad" placeholder="0" min="0" inputmode="numeric">
 
         <label>Comentario / Última Observación</label>
         <textarea id="comentario" rows="2" placeholder="Escribe aquí novedades del ítem..."></textarea>
