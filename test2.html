@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario Pro con Escáner</title>
+    <!-- Incluimos la librería oficial para lectura de QR y Barras -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f7f6; padding: 15px; margin: 0; }
+        .container { max-width: 600px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: auto; }
+        h2 { text-align: center; color: #333; margin-top: 0; }
+        label { display: block; margin-top: 12px; font-weight: bold; color: #555; }
+        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        input:disabled, textarea:disabled { background-color: #eaedd1; color: #555; cursor: not-allowed; }
+        .radio-group { margin-top: 8px; display: flex; gap: 15px; }
+        button { width: 100%; background: #007bff; color: white; border: none; padding: 12px; margin-top: 15px; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        #reader { width: 100%; background: #000; border-radius: 8px; overflow: hidden; margin-bottom: 15px; }
+        .badge { display: inline-block; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 5px; }
+        .badge-new { background: #ffc107; color: #212529; }
+        .badge-exists { background: #28a745; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Escanear e Registrar Inventario</h2>
+    
+    <!-- Zona de la Cámara -->
+    <div id="reader"></div>
+    
+    <form id="inventoryForm">
+        <label>Código Detectado (QR / Barras)</label>
+        <input type="text" id="codigo" required placeholder="Escanea un código o escríbelo manualmente">
+        <button type="button" style="background:#6c757d; margin-top:5px; padding:6px;" onclick="buscarCodigoManual()">Buscar Código</button>
+        
+        <div id="statusBadge"></div>
+
+        <!-- Campos dinámicos de nuevo registro -->
+        <label>Nombre del Producto</label>
+        <input type="text" id="producto" disabled required placeholder="Se auto-rellena o habilita si es nuevo">
+
+        <label>Ubicación en Almacén</label>
+        <input type="text" id="ubicacion" disabled placeholder="Ej. Pasillo A - Estante 3">
+
+        <hr style="margin-top:20px; border: 0; border-top: 1px solid #eee;">
+
+        <!-- Campos operativos de actualización constante -->
+        <label>Estado de Revisión</label>
+        <div class="radio-group">
+            <label style="font-weight: normal;"><input type="radio" name="estado" value="En existencia" checked> En existencia</label>
+            <label style="font-weight: normal;"><input type="radio" name="estado" value="Sin existencia"> Sin existencia</label>
+        </div>
+
+        <label>Cantidad de Piezas</label>
+        <input type="number" id="cantidad" required placeholder="Ingresa la cantidad física actual" min="0">
+
+        <label>Comentario / Observación</label>
+        <textarea id="comentario" rows="2" placeholder="Detalles de la revisión..."></textarea>
+
+        <button type="submit" id="submitBtn">Guardar en Google Sheets</button>
+    </form>
+</div>
+
+<script>
+    const WEB_APP_URL = "TU_URL_DE_APPS_SCRIPT_AQUÍ";
+    let filaActualizar = null; // Guardará la fila si el ítem ya existe
+
+    // 1. Inicializar Escáner de Cámara
+    function onScanSuccess(decodedText, decodedResult) {
+        document.getElementById('codigo').value = decodedText;
+        // Detener escaneo temporalmente para procesar
+        html5QrcodeScanner.clear();
+        procesarCodigo(decodedText);
+    }
+
+    var html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 150} });
+    html5QrcodeScanner.render(onScanSuccess);
+
+    function buscarCodigoManual() {
+        const cod = document.getElementById('codigo').value;
+        if(cod) procesarCodigo(cod);
+    }
+
+    // 2. Comunicar con Sheets para saber si existe el código
+    function procesarCodigo(codigo) {
+        const badgeZone = document.getElementById('statusBadge');
+        badgeZone.innerHTML = "<span>Buscando en Sheets...</span>";
+
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ accion: "buscar", codigo: codigo })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.encontrado) {
+                badgeZone.innerHTML = '<span class="badge badge-exists">Producto Encontrado</span>';
+                document.getElementById('producto').value = data.producto;
+                document.getElementById('ubicacion').value = data.ubicacion;
+                
+                // Bloquear campos de edición base
+                document.getElementById('producto').disabled = true;
+                document.getElementById('ubicacion').disabled = true;
+                filaActualizar = data.fila; 
+            } else {
+                badgeZone.innerHTML = '<span class="badge badge-new">¡Código Nuevo! Completa el registro</span>';
+                alert("El código no existe. Por favor, introduce el nombre y ubicación para registrarlo por primera vez.");
+                
+                // Habilitar campos para ingreso manual completo
+                document.getElementById('producto').value = "";
+                document.getElementById('ubicacion').value = "";
+                document.getElementById('producto').disabled = false;
+                document.getElementById('ubicacion').disabled = false;
+                filaActualizar = null;
+            }
+            document.getElementById('cantidad').focus();
+        })
+        .catch(err => {
+            console.error(err);
+            badgeZone.innerHTML = "<span>Error de conexión</span>";
+        });
+    }
+
+    // 3. Enviar datos finales de Guardado / Modificación
+    document.getElementById('inventoryForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "Guardando...";
+
+        const payload = {
+            accion: "registrar",
+            filaActualizar: filaActualizar,
+            codigo: document.getElementById('codigo').value,
+            producto: document.getElementById('producto').value,
+            ubicacion: document.getElementById('ubicacion').value,
+            estado: document.querySelector('input[name="estado"]:checked').value,
+            cantidad: document.getElementById('cantidad').value,
+            comentario: document.getElementById('comentario').value
+        };
+
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(payload)
+        }).then(() => {
+            alert("Hojas de cálculo actualizadas con éxito.");
+            document.getElementById('inventoryForm').reset();
+            document.getElementById('statusBadge').innerHTML = "";
+            filaActualizar = null;
+            btn.disabled = false;
+            btn.innerText = "Guardar en Google Sheets";
+            
+            // Reiniciar la cámara para el siguiente escaneo
+            html5QrcodeScanner.render(onScanSuccess);
+        }).catch(err => {
+            alert("Error al guardar los datos.");
+            btn.disabled = false;
+            btn.innerText = "Guardar en Google Sheets";
+        });
+    });
+</script>
+
+</body>
+</html>
